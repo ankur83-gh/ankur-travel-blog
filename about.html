@@ -542,6 +542,14 @@
       link.addEventListener('click', () => navLinks.classList.remove('open'));
     });
 
+    // ---------- Back to top ----------
+    document.querySelectorAll('.back-to-top').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+
     const newsletterForm = document.getElementById('newsletterForm');
     const newsletterFormWrap = document.getElementById('newsletterFormWrap');
     const newsletterSuccess = document.getElementById('newsletterSuccess');
