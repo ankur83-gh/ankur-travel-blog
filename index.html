@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wander With Suzy — Stories From Every Corner of the World</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,600&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+
+<style>
+  :root {
+    --cream: #FFF8F0;
+    --coral: #FF6B6B;
+    --coral-dark: #e85555;
+    --forest: #2D6A4F;
+    --ink: #3a3a3a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Nunito Sans', sans-serif;
+    line-height: 1.6;
+  }
+
+  a { text-decoration: none; }
+
+  img { max-width: 100%; display: block; }
+
+  .container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---------- Nav ---------- */
+  .site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 248, 240, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(45, 106, 79, 0.12);
+  }
+
+  .site-nav .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .site-nav .brand {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--forest);
+  }
+
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 32px;
+  }
+
+  .nav-links a {
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    position: relative;
+    padding: 4px 0;
+    transition: color 0.2s ease;
+  }
+
+  .nav-links a:hover { color: var(--coral); }
+
+  .nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    height: 2px;
+    background: var(--coral);
+    transition: width 0.25s ease;
+  }
+
+  .nav-links a:hover::after { width: 100%; }
+
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: var(--forest);
+    cursor: pointer;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    text-align: center;
+    padding: 90px 24px 70px;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255, 107, 107, 0.10) 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(45, 106, 79, 0.10) 0%, transparent 45%);
+  }
+
+  .hero-eyebrow {
+    display: inline-block;
+    color: var(--coral);
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    margin-bottom: 18px;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 6vw, 4.6rem);
+    color: var(--forest);
+    line-height: 1.05;
+  }
+
+  .hero p.tagline {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+    color: var(--ink);
+    margin-top: 18px;
+    opacity: 0.85;
+  }
+
+  .hero .divider {
+    width: 70px;
+    height: 3px;
+    background: var(--coral);
+    margin: 28px auto 0;
+    border-radius: 2px;
+  }
+
+  /* ---------- Section headings ---------- */
+  .section-heading {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .section-heading h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--forest);
+    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+  }
+
+  .section-heading p {
+    color: #6b6b6b;
+    max-width: 520px;
+    margin: 10px auto 0;
+  }
+
+  /* ---------- Map Section ---------- */
+  .map-section { padding: 30px 24px 80px; }
+
+  .filters {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 30px 0 28px;
+  }
+
+  .filter-btn {
+    border: 2px solid var(--forest);
+    background: transparent;
+    color: var(--forest);
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 9px 24px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .filter-btn:hover {
+    background: rgba(45, 106, 79, 0.08);
+  }
+
+  .filter-btn.active {
+    background: var(--coral);
+    border-color: var(--coral);
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(255, 107, 107, 0.35);
+  }
+
+  #map {
+    height: 520px;
+    width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 14px 40px rgba(45, 106, 79, 0.18);
+    border: 6px solid #ffffff;
+  }
+
+  @media (max-width: 600px) {
+    #map { height: 380px; border-radius: 14px; border-width: 4px; }
+  }
+
+  /* Leaflet popup styling */
+  .leaflet-popup-content-wrapper {
+    padding: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 14px 34px rgba(45, 106, 79, 0.22);
+  }
+
+  .leaflet-popup-content { margin: 0; width: 240px !important; }
+
+  .leaflet-popup-tip { background: #fff; }
+
+  /* Close button: small coral circle with a white X */
+  .leaflet-popup-close-button {
+    top: 10px !important;
+    right: 10px !important;
+    width: 24px;
+    height: 24px;
+    background: var(--coral);
+    color: #fff !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: background 0.2s ease;
+  }
+
+  .leaflet-popup-close-button:hover {
+    background: var(--coral-dark);
+    color: #fff !important;
+  }
+
+  .popup-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 14px 14px 0 0;
+  }
+
+  .popup-card .popup-body {
+    padding: 14px 16px 16px;
+  }
+
+  .popup-card .popup-category {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 6px;
+  }
+
+  .popup-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    color: var(--forest);
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+  }
+
+  .popup-card p {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 10px;
+  }
+
+  .popup-card .read-more {
+    color: var(--coral);
+    font-weight: 800;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+  }
+
+  .popup-card .read-more:hover { text-decoration: underline; }
+
+  /* ---------- Cluster markers ---------- */
+  .cluster-badge {
+    background: var(--coral);
+    color: #fff;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Nunito Sans', sans-serif;
+    font-weight: 800;
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.25), 0 6px 16px rgba(45, 106, 79, 0.25);
+    border: 2px solid #ffffff;
+    animation: pin-drop-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes pin-drop-in {
+    0% { transform: translateY(-26px) scale(0.3); opacity: 0; }
+    60% { transform: translateY(3px) scale(1.12); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  .cluster-small .cluster-badge { font-size: 0.85rem; }
+  .cluster-medium .cluster-badge { font-size: 0.95rem; }
+  .cluster-large .cluster-badge { font-size: 1.05rem; }
+
+  /* ---------- Individual pin ---------- */
+  .coral-pin-icon { background: transparent; border: none; }
+
+  .coral-pin-icon .pin-dot {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: var(--coral);
+    border: 2px solid #ffffff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s ease;
+    animation: pin-drop-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .coral-pin-icon:hover .pin-dot { transform: scale(1.3); }
+
+  /* ---------- Blog Section ---------- */
+  .blog-section {
+    padding: 20px 24px 100px;
+  }
+
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 40px;
+  }
+
+  @media (max-width: 900px) {
+    .blog-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 620px) {
+    .blog-grid { grid-template-columns: 1fr; }
+  }
+
+  .blog-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(45, 106, 79, 0.10);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .blog-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 32px rgba(255, 107, 107, 0.2);
+  }
+
+  .blog-card .thumb {
+    height: 200px;
+    overflow: hidden;
+  }
+
+  .blog-card .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .blog-card:hover .thumb img { transform: scale(1.06); }
+
+  .blog-card .card-body { padding: 22px 24px 26px; }
+
+  .blog-card .date {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .blog-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem;
+    color: var(--forest);
+    margin-bottom: 10px;
+  }
+
+  .blog-card p.excerpt {
+    font-size: 0.92rem;
+    color: #5c5c5c;
+    margin-bottom: 14px;
+  }
+
+  .blog-card .read-more {
+    color: var(--coral-dark);
+    font-weight: 800;
+    font-size: 0.85rem;
+  }
+
+  .blog-card .read-more:hover { text-decoration: underline; }
+
+  /* ---------- About (anchor target) ---------- */
+  .about-section {
+    padding: 70px 24px 100px;
+    background: rgba(45, 106, 79, 0.06);
+    text-align: center;
+  }
+
+  .about-section .about-inner {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .about-section h2 {
+    font-family: 'Playfair Display', serif;
+    color: var(--forest);
+    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+    margin-bottom: 18px;
+  }
+
+  .about-section p {
+    color: #555;
+    font-size: 1.02rem;
+  }
+
+  /* ---------- Footer ---------- */
+  .site-footer {
+    background: var(--cream);
+    border-top: 3px solid var(--forest);
+    padding: 40px 24px 30px;
+    text-align: center;
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .footer-socials {
+    display: flex;
+    gap: 16px;
+  }
+
+  .social-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--coral);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .social-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .social-icon:hover {
+    background: var(--coral-dark);
+    transform: translateY(-3px);
+  }
+
+  .footer-copyright {
+    font-size: 0.85rem;
+    color: #7a7a7a;
+  }
+
+  .back-to-top {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--forest);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s ease;
+  }
+
+  .back-to-top:hover {
+    color: var(--coral);
+  }
+
+  /* ---------- Scroll-triggered reveal ---------- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ---------- Responsive nav ---------- */
+  @media (max-width: 720px) {
+    .nav-toggle { display: block; }
+
+    .nav-links {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--cream);
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      border-bottom: 1px solid rgba(45, 106, 79, 0.12);
+    }
+
+    .nav-links.open { max-height: 260px; }
+
+    .nav-links li { width: 100%; text-align: center; }
+
+    .nav-links a {
+      display: block;
+      padding: 16px 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <nav class="site-nav" id="top">
+    <div class="container">
+      <a href="#home" class="brand">Wander With Suzy</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">&#9776;</button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#home">Home</a></li>
+        <li><a href="blog.html">Blog</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="hero reveal-group" id="home">
+    <span class="hero-eyebrow reveal">Travel &amp; Wander</span>
+    <h1 class="reveal">Wander With Suzy</h1>
+    <p class="tagline reveal">Stories From Every Corner of the World.</p>
+    <div class="divider reveal"></div>
+  </header>
+
+  <section class="map-section" id="map-section">
+    <div class="container">
+      <div class="section-heading reveal">
+        <h2>Where I've Been</h2>
+        <p>Click a pin to peek into a story. Filter by the kind of adventure you're craving.</p>
+      </div>
+
+      <div class="filters reveal-group" id="filters">
+        <button class="filter-btn active reveal" data-filter="all">All</button>
+        <button class="filter-btn reveal" data-filter="culture">Culture</button>
+        <button class="filter-btn reveal" data-filter="food">Food</button>
+        <button class="filter-btn reveal" data-filter="adventure">Adventure</button>
+      </div>
+
+      <div id="map" class="reveal"></div>
+    </div>
+  </section>
+
+  <section class="blog-section" id="blog">
+    <div class="container">
+      <div class="section-heading reveal">
+        <h2>Latest Stories</h2>
+        <p>Fresh off the road — the newest dispatches from wherever the wifi was strong enough.</p>
+      </div>
+
+      <div class="blog-grid reveal-group">
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/marrakech-souk/600/450" alt="Marrakech souk">
+          </div>
+          <div class="card-body">
+            <span class="date">June 18, 2026</span>
+            <h3>Getting Gloriously Lost in Marrakech's Souks</h3>
+            <p class="excerpt">Spices, lanterns, and the art of haggling without losing your mind — a two-day wander through the medina's tangled alleys.</p>
+            <a href="posts/marrakech.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/santorini-blue/600/450" alt="Santorini blue domes">
+          </div>
+          <div class="card-body">
+            <span class="date">June 2, 2026</span>
+            <h3>48 Hours in Santorini: Chasing the Blue Domes</h3>
+            <p class="excerpt">Where to catch the least crowded sunset, the caldera hike worth the sore legs, and why Oia is only half the story.</p>
+            <a href="posts/santorini.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/bali-rice-terrace/600/450" alt="Bali rice terraces">
+          </div>
+          <div class="card-body">
+            <span class="date">May 21, 2026</span>
+            <h3>Why Bali Still Feels Like Home After Five Visits</h3>
+            <p class="excerpt">Dawn at the rice terraces, incense drifting from temple offerings, and the surf break that keeps pulling me back.</p>
+            <a href="posts/bali.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section" id="about">
+    <div class="about-inner reveal">
+      <h2>About Suzy</h2>
+      <p>Portugal-based, perpetually jet-lagged, and always chasing the next story. I write about the food that stops me mid-sentence, the culture that rearranges how I see things, and the adventures that make my hands shake a little. Come get lost with me.</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-socials">
+        <a href="https://instagram.com" class="social-icon" aria-label="Instagram" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line></svg>
+        </a>
+        <a href="https://youtube.com" class="social-icon" aria-label="YouTube" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+        </a>
+        <a href="https://twitter.com" class="social-icon" aria-label="Twitter / X" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.6L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4H5.4l12.3 16z"></path></svg>
+        </a>
+      </div>
+      <p class="footer-copyright">&copy; 2025 Wander With Suzy</p>
+      <a href="#top" class="back-to-top">&uarr; Back to top</a>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script>
+    // ---------- Data ----------
+    const locations = [
+      {
+        country: "Portugal",
+        city: "Lisbon",
+        lat: 38.7223,
+        lng: -9.1393,
+        description: "Where it all began. Pastéis de nata and golden-hour sunsets.",
+        category: "home",
+        label: "Home Base",
+        seed: "lisbon-suzy",
+        slug: "lisbon"
+      },
+      {
+        country: "Japan",
+        city: "Tokyo",
+        lat: 35.6762,
+        lng: 139.6503,
+        description: "Cherry blossoms and beautiful, controlled chaos.",
+        category: "culture",
+        label: "Culture",
+        seed: "tokyo-suzy",
+        slug: "tokyo"
+      },
+      {
+        country: "Thailand",
+        city: "Bangkok",
+        lat: 13.7563,
+        lng: 100.5018,
+        description: "Street food heaven. Every corner is a new flavor.",
+        category: "food",
+        label: "Food",
+        seed: "bangkok-suzy",
+        slug: "bangkok"
+      },
+      {
+        country: "Morocco",
+        city: "Marrakech",
+        lat: 31.6295,
+        lng: -7.9811,
+        description: "The souks, the colors, the glorious madness.",
+        category: "adventure",
+        label: "Adventure",
+        seed: "marrakech-suzy",
+        slug: "marrakech"
+      },
+      {
+        country: "Italy",
+        city: "Amalfi Coast",
+        lat: 40.6340,
+        lng: 14.6027,
+        description: "Lemon trees, cliffside drives, and the bluest water.",
+        category: "culture",
+        label: "Culture",
+        seed: "amalfi-suzy",
+        slug: "amalfi"
+      },
+      {
+        country: "Vietnam",
+        city: "Hanoi",
+        lat: 21.0278,
+        lng: 105.8342,
+        description: "Motorbikes, steaming pho, and old quarter magic.",
+        category: "food",
+        label: "Food",
+        seed: "hanoi-suzy",
+        slug: "hanoi"
+      },
+      {
+        country: "Greece",
+        city: "Santorini",
+        lat: 36.3932,
+        lng: 25.4615,
+        description: "Blue domes and impossible sunsets.",
+        category: "culture",
+        label: "Culture",
+        seed: "santorini-suzy",
+        slug: "santorini"
+      },
+      {
+        country: "Indonesia",
+        city: "Bali",
+        lat: -8.3405,
+        lng: 115.0920,
+        description: "Rice terraces at dawn, temple incense, and surf.",
+        category: "adventure",
+        label: "Adventure",
+        seed: "bali-suzy",
+        slug: "bali"
+      }
+    ];
+
+    // ---------- Map init ----------
+    const map = L.map('map', {
+      scrollWheelZoom: false,
+      worldCopyJump: true
+    }).setView([20, 20], 2);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 18
+    }).addTo(map);
+
+    const clusterGroup = L.markerClusterGroup({
+      showCoverageOnHover: false,
+      maxClusterRadius: 60,
+      spiderfyOnMaxZoom: true,
+      iconCreateFunction: function (cluster) {
+        const count = cluster.getChildCount();
+        let sizeClass = 'cluster-small';
+        let size = 38;
+        if (count >= 10) { sizeClass = 'cluster-large'; size = 54; }
+        else if (count >= 5) { sizeClass = 'cluster-medium'; size = 46; }
+        return L.divIcon({
+          html: `<div class="cluster-badge">${count}</div>`,
+          className: `custom-cluster-icon ${sizeClass}`,
+          iconSize: L.point(size, size)
+        });
+      }
+    });
+
+    function makePinIcon(delayMs) {
+      return L.divIcon({
+        className: 'coral-pin-icon',
+        html: `<div class="pin-dot" style="animation-delay:${delayMs}ms"></div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+    }
+
+    const markers = [];
+
+    locations.forEach((loc, index) => {
+      const marker = L.marker([loc.lat, loc.lng], { icon: makePinIcon(index * 150) });
+
+      const popupHtml = `
+        <div class="popup-card">
+          <img src="https://picsum.photos/seed/${loc.seed}/400/260" alt="${loc.country}">
+          <div class="popup-body">
+            <span class="popup-category">${loc.label}</span>
+            <h3>${loc.city}, ${loc.country}</h3>
+            <p>${loc.description}</p>
+            <a href="posts/${loc.slug}.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupHtml, { closeButton: true });
+      marker.off('click'); // replace Leaflet's instant open-on-click with our animated version
+
+      marker.on('click', function () {
+        map.closePopup();
+        map.flyTo(marker.getLatLng(), 6, { duration: 1.2 });
+        map.once('moveend', () => marker.openPopup());
+      });
+
+      marker.category = loc.category;
+      clusterGroup.addLayer(marker);
+      markers.push(marker);
+    });
+
+    map.addLayer(clusterGroup);
+
+    // ---------- Filters ----------
+    const filterButtons = document.querySelectorAll('.filter-btn');
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.dataset.filter;
+
+        markers.forEach(marker => {
+          const matches = filter === 'all' || marker.category === filter;
+          if (matches) {
+            if (!clusterGroup.hasLayer(marker)) clusterGroup.addLayer(marker);
+          } else {
+            if (clusterGroup.hasLayer(marker)) clusterGroup.removeLayer(marker);
+          }
+        });
+      });
+    });
+
+    // ---------- Mobile nav ----------
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => navLinks.classList.remove('open'));
+    });
+
+    // ---------- Scroll-triggered reveal ----------
+    document.querySelectorAll('.reveal-group').forEach(group => {
+      Array.from(group.children).forEach((el, i) => {
+        if (el.classList.contains('reveal')) el.style.transitionDelay = `${i * 90}ms`;
+      });
+    });
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  </script>
+</body>
+</html>

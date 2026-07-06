@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — Wander With Suzy</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,600&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --cream: #FFF8F0;
+    --coral: #FF6B6B;
+    --coral-dark: #e85555;
+    --forest: #2D6A4F;
+    --ink: #3a3a3a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Nunito Sans', sans-serif;
+    line-height: 1.6;
+  }
+
+  a { text-decoration: none; }
+
+  img { max-width: 100%; display: block; }
+
+  .container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ---------- Nav ---------- */
+  .site-nav {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 248, 240, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(45, 106, 79, 0.12);
+  }
+
+  .site-nav .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .site-nav .brand {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--forest);
+  }
+
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 32px;
+  }
+
+  .nav-links a {
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    position: relative;
+    padding: 4px 0;
+    transition: color 0.2s ease;
+  }
+
+  .nav-links a:hover { color: var(--coral); }
+
+  .nav-links a.current { color: var(--coral); }
+
+  .nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    width: 0;
+    height: 2px;
+    background: var(--coral);
+    transition: width 0.25s ease;
+  }
+
+  .nav-links a:hover::after,
+  .nav-links a.current::after { width: 100%; }
+
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: var(--forest);
+    cursor: pointer;
+  }
+
+  @media (max-width: 720px) {
+    .nav-toggle { display: block; }
+
+    .nav-links {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--cream);
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+      border-bottom: 1px solid rgba(45, 106, 79, 0.12);
+    }
+
+    .nav-links.open { max-height: 260px; }
+
+    .nav-links li { width: 100%; text-align: center; }
+
+    .nav-links a { display: block; padding: 16px 0; }
+  }
+
+  /* ---------- Page header ---------- */
+  .page-header {
+    text-align: center;
+    padding: 80px 24px 50px;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255, 107, 107, 0.10) 0%, transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(45, 106, 79, 0.10) 0%, transparent 45%);
+  }
+
+  .page-header span.eyebrow {
+    display: inline-block;
+    color: var(--coral);
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    margin-bottom: 18px;
+  }
+
+  .page-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    color: var(--forest);
+    line-height: 1.1;
+  }
+
+  .page-header p {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--ink);
+    opacity: 0.85;
+    margin-top: 16px;
+  }
+
+  .page-header .divider {
+    width: 70px;
+    height: 3px;
+    background: var(--coral);
+    margin: 24px auto 0;
+    border-radius: 2px;
+  }
+
+  /* ---------- Blog grid ---------- */
+  .blog-section { padding: 20px 24px 100px; }
+
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 34px;
+    margin-top: 20px;
+  }
+
+  @media (max-width: 700px) {
+    .blog-grid { grid-template-columns: 1fr; }
+  }
+
+  .blog-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(45, 106, 79, 0.10);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blog-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 20px 40px rgba(255, 107, 107, 0.22);
+  }
+
+  .blog-card .thumb {
+    height: 240px;
+    overflow: hidden;
+  }
+
+  .blog-card .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .blog-card:hover .thumb img { transform: scale(1.05); }
+
+  .blog-card .card-body {
+    padding: 24px 26px 28px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .blog-card .date {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .blog-card h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--forest);
+    margin-bottom: 10px;
+    line-height: 1.25;
+  }
+
+  .blog-card p.excerpt {
+    font-size: 0.94rem;
+    color: #5c5c5c;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+
+  .blog-card .read-more {
+    color: var(--coral-dark);
+    font-weight: 800;
+    font-size: 0.85rem;
+    margin-top: auto;
+    align-self: flex-start;
+  }
+
+  .blog-card .read-more:hover { text-decoration: underline; }
+
+  /* ---------- Footer ---------- */
+  .site-footer {
+    background: var(--cream);
+    border-top: 3px solid var(--forest);
+    padding: 40px 24px 30px;
+    text-align: center;
+  }
+
+  .footer-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .footer-socials {
+    display: flex;
+    gap: 16px;
+  }
+
+  .social-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--coral);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .social-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .social-icon:hover {
+    background: var(--coral-dark);
+    transform: translateY(-3px);
+  }
+
+  .footer-copyright {
+    font-size: 0.85rem;
+    color: #7a7a7a;
+  }
+
+  .back-to-top {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--forest);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s ease;
+  }
+
+  .back-to-top:hover {
+    color: var(--coral);
+  }
+
+  /* ---------- Scroll-triggered reveal ---------- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+  <nav class="site-nav" id="top">
+    <div class="container">
+      <a href="index.html#home" class="brand">Wander With Suzy</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">&#9776;</button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="index.html#home">Home</a></li>
+        <li><a href="blog.html" class="current">Blog</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <header class="page-header reveal-group">
+    <span class="eyebrow reveal">The Blog</span>
+    <h1 class="reveal">Stories From the Road</h1>
+    <p class="reveal">Every post, every detour, every plate of food worth flying for.</p>
+    <div class="divider reveal"></div>
+  </header>
+
+  <section class="blog-section">
+    <div class="container">
+      <div class="blog-grid reveal-group">
+
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/lisbon-suzy/700/500" alt="Lisbon streets">
+          </div>
+          <div class="card-body">
+            <span class="date">June 28, 2026</span>
+            <h2>Where It All Began: A Love Letter to Lisbon</h2>
+            <p class="excerpt">Pastéis de nata, tram-rattled hills, and the golden-hour light that started this whole wandering habit of mine.</p>
+            <a href="posts/lisbon.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/tokyo-suzy/700/500" alt="Tokyo streets">
+          </div>
+          <div class="card-body">
+            <span class="date">June 21, 2026</span>
+            <h2>Tokyo in Bloom: Cherry Blossoms and Controlled Chaos</h2>
+            <p class="excerpt">Navigating Shibuya crossing at rush hour, then finding total stillness under a canopy of sakura an hour later.</p>
+            <a href="posts/tokyo.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/marrakech-souk/700/500" alt="Marrakech souk">
+          </div>
+          <div class="card-body">
+            <span class="date">June 18, 2026</span>
+            <h2>Getting Gloriously Lost in Marrakech's Souks</h2>
+            <p class="excerpt">Spices, lanterns, and the art of haggling without losing your mind — a two-day wander through the medina's tangled alleys.</p>
+            <a href="posts/marrakech.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/bangkok-suzy/700/500" alt="Bangkok street food">
+          </div>
+          <div class="card-body">
+            <span class="date">June 12, 2026</span>
+            <h2>Bangkok on a Fork: A Street Food Crawl</h2>
+            <p class="excerpt">Eight stalls, one night market, and the som tam that ruined every other papaya salad for me forever.</p>
+            <a href="posts/bangkok.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/amalfi-suzy/700/500" alt="Amalfi Coast">
+          </div>
+          <div class="card-body">
+            <span class="date">June 9, 2026</span>
+            <h2>Cliffside and Carefree: Driving the Amalfi Coast</h2>
+            <p class="excerpt">Lemon groves, hairpin turns, and the bluest water I've ever tried to describe and failed.</p>
+            <a href="posts/amalfi.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/hanoi-suzy/700/500" alt="Hanoi old quarter">
+          </div>
+          <div class="card-body">
+            <span class="date">June 5, 2026</span>
+            <h2>Hanoi's Old Quarter: Motorbikes and Midnight Pho</h2>
+            <p class="excerpt">Learning to cross the street like a local and finding the tiny plastic-stool pho stand that's now my whole personality.</p>
+            <a href="posts/hanoi.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/santorini-blue/700/500" alt="Santorini blue domes">
+          </div>
+          <div class="card-body">
+            <span class="date">June 2, 2026</span>
+            <h2>48 Hours in Santorini: Chasing the Blue Domes</h2>
+            <p class="excerpt">Where to catch the least crowded sunset, the caldera hike worth the sore legs, and why Oia is only half the story.</p>
+            <a href="posts/santorini.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+
+        <article class="blog-card reveal">
+          <div class="thumb">
+            <img src="https://picsum.photos/seed/bali-rice-terrace/700/500" alt="Bali rice terraces">
+          </div>
+          <div class="card-body">
+            <span class="date">May 21, 2026</span>
+            <h2>Why Bali Still Feels Like Home After Five Visits</h2>
+            <p class="excerpt">Dawn at the rice terraces, incense drifting from temple offerings, and the surf break that keeps pulling me back.</p>
+            <a href="posts/bali.html" class="read-more">Read More &rarr;</a>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-socials">
+        <a href="https://instagram.com" class="social-icon" aria-label="Instagram" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"></line></svg>
+        </a>
+        <a href="https://youtube.com" class="social-icon" aria-label="YouTube" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>
+        </a>
+        <a href="https://twitter.com" class="social-icon" aria-label="Twitter / X" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.6L4.4 22H1.3l8.1-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4H5.4l12.3 16z"></path></svg>
+        </a>
+      </div>
+      <p class="footer-copyright">&copy; 2025 Wander With Suzy</p>
+      <a href="#top" class="back-to-top">&uarr; Back to top</a>
+    </div>
+  </footer>
+
+  <script>
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    navToggle.addEventListener('click', () => {
+      navLinks.classList.toggle('open');
+    });
+
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => navLinks.classList.remove('open'));
+    });
+
+    // ---------- Scroll-triggered reveal ----------
+    document.querySelectorAll('.reveal-group').forEach(group => {
+      Array.from(group.children).forEach((el, i) => {
+        if (el.classList.contains('reveal')) el.style.transitionDelay = `${i * 90}ms`;
+      });
+    });
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  </script>
+</body>
+</html>
